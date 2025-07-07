@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"p2p-file-sharing/internal/transfer"
 )
 
 func Server(port string){
@@ -48,6 +49,12 @@ func handleClient(conn net.Conn) {
     // ...
 	if message == "HELLO\n" {
 		conn.Write([]byte("WELCOME\n"))
+
+		// Receive file after handshake
+		err := transfer.ReceiveFile(conn)
+		if err != nil {
+			fmt.Println("Receive error:", err)
+		}
 	} else {
 		conn.Write([]byte("UNKNOWN COMMAND\n"))
 	}

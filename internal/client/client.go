@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"p2p-file-sharing/internal/transfer"
 )
 
 func Client(host, port string) {
@@ -17,19 +18,17 @@ func Client(host, port string) {
 
     // Send data to the server
     // ...
-	data := []byte("HELLO\n")
-	_, err = conn.Write(data)
-	if err != nil {
-		fmt.Println("Error:", err)
+	_, _ = conn.Write([]byte("HELLO\n"))
+	// Wait for WELCOME
+	message, _ := bufio.NewReader(conn).ReadString('\n')
+	if message != "WELCOME\n" {
+		fmt.Println("Unexpected response:", message)
 		return
 	}
 
-    // Read and process data from the server
-    // ...
-	message, err := bufio.NewReader(conn).ReadString('\n')
+	// Send the file
+	err = transfer.SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
 	if err != nil {
-		fmt.Println("Read error:", err)
-		return
+		fmt.Println("File send error:", err)
 	}
-	fmt.Printf("Response from peer: %s", message)
 }
