@@ -96,3 +96,47 @@ func ReceiveFile(conn net.Conn) error{
 	fmt.Println("File received:", "received_"+filename)
 	return nil
 }
+
+func SendCatalog(conn net.Conn, folder string) error {
+	files, err := BuildFileCatalog(folder)
+	if err != nil {
+		return err
+	}
+
+	writer := bufio.NewWriter(conn)
+	writer.WriteString("CATALOG\n")
+	for _, f := range files {
+		writer.WriteString(fmt.Sprintf("FILENAME:%s;SIZE:%d\n", f.Name, f.Size))
+	}
+	writer.WriteString("ENDCATALOG\n")
+	return writer.Flush()
+}
+
+func ReceiveCatalog(reader *bufio.Reader) ([]FileMeta, error) {
+	var catalog []FileMeta
+
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			return catalog, err
+		}
+		line = strings.TrimSpace(line)
+		if line == "ENDCATALOG" {
+			break
+		}
+		if strings.HasPrefix(line, "FILENAME:") {
+			parts := strings.Split(line, ";")
+			if len(parts) < 2 {
+				continue
+			}
+			name := strings.TrimPrefix(parts[0], "FILENAME:")
+			sizeStr := strings.TrimPrefix(parts[1], "SIZE:")
+			size, _ := strconv.ParseInt(sizeStr, 10, 64)
+			catalog = append(catalog, FileMeta{
+				Name: name,
+				Size: size,
+			})
+		}
+	}
+	return catalog, nil
+}

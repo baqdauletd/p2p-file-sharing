@@ -25,9 +25,31 @@ func Client(host, port string) {
 		return
 	}
 
+	fmt.Println("here")
+	err = SendCatalog(conn, "shared")
+	if err != nil{
+		fmt.Println("Error:", err)
+		return
+	}
+
 	// Send the file
-	err = SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
+	// err = SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
+	// if err != nil {
+	// 	fmt.Println("File send error:", err)
+	// }
+
+	// Request a file
+	filename := "hello.txt"
+	request := fmt.Sprintf("REQUEST:%s\n", filename)
+	_, err = conn.Write([]byte(request))
 	if err != nil {
-		fmt.Println("File send error:", err)
+		fmt.Println("Request send error:", err)
+		return
+	}
+
+	// Receive the file
+	err = ReceiveFile(conn)
+	if err != nil {
+		fmt.Println("Receive error:", err)
 	}
 }
