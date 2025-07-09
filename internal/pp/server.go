@@ -63,13 +63,20 @@ func handleClient(conn net.Conn) {
 		// }
 
 		//-----------CATALOG CHANGES
-		catalog, err := ReceiveCatalog(reader)
+		// catalog, err := ReceiveCatalog(reader)
+		// if err != nil{
+		// 	fmt.Println("Error:", err)
+		// }
+		// for _, file := range catalog{
+		// 	fmt.Println("Name: "+file.Name)
+		// }
+
+		err = SendCatalog(conn, "shared")
 		if err != nil{
 			fmt.Println("Error:", err)
+			return
 		}
-		for _, file := range catalog{
-			fmt.Println("Name: "+file.Name)
-		}
+
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading request:", err)

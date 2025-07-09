@@ -115,6 +115,11 @@ func SendCatalog(conn net.Conn, folder string) error {
 func ReceiveCatalog(reader *bufio.Reader) ([]FileMeta, error) {
 	var catalog []FileMeta
 
+	firstLine, _ := reader.ReadString('\n')
+	if strings.TrimSpace(firstLine) != "CATALOG" {
+		return nil, fmt.Errorf("missing CATALOG header")
+	}
+	
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
