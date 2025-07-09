@@ -1,10 +1,10 @@
-package server
+package pp
 
 import (
 	"bufio"
 	"fmt"
+	// "log"
 	"net"
-	"p2p-file-sharing/internal/transfer"
 )
 
 func Server(port string){
@@ -15,7 +15,7 @@ func Server(port string){
 	}
 	defer listener.Close()
 
-	fmt.Println("Server is listening on port 8080")
+	fmt.Println("Server is listening on port "+port)
 
     for {
         // Accept incoming connections
@@ -24,6 +24,7 @@ func Server(port string){
             fmt.Println("Error:", err)
             continue
         }
+		// log.Println("here2")
 
         // Handle client connection in a goroutine
         go handleClient(conn)
@@ -51,7 +52,7 @@ func handleClient(conn net.Conn) {
 		conn.Write([]byte("WELCOME\n"))
 
 		// Receive file after handshake
-		err := transfer.ReceiveFile(conn)
+		err := ReceiveFile(conn)
 		if err != nil {
 			fmt.Println("Receive error:", err)
 		}

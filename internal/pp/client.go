@@ -1,10 +1,9 @@
-package client
+package pp
 
 import (
 	"bufio"
 	"fmt"
 	"net"
-	"p2p-file-sharing/internal/transfer"
 )
 
 func Client(host, port string) {
@@ -27,7 +26,7 @@ func Client(host, port string) {
 	}
 
 	// Send the file
-	err = transfer.SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
+	err = SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
 	if err != nil {
 		fmt.Println("File send error:", err)
 	}
