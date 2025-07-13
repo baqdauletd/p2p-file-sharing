@@ -2,6 +2,7 @@ package pp
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"net"
@@ -26,12 +27,26 @@ func SendFile(conn net.Conn, filepath string) error {
 
 	writer := bufio.NewWriter(conn)
 
-	// Send metadata
+	// send metadata
 	_, _ = writer.WriteString("FILENAME:" + stat.Name() + "\n")
 	_, _ = writer.WriteString("SIZE:" + fmt.Sprintf("%d\n", stat.Size()))
 	writer.Flush()
 
-	// Send file in chunks
+	hashes, err := GenerateChunkHashes(filepath)
+	if err != nil{
+		return err
+	}
+
+	// fmt.Println("Hashes in SendFile:", hashes)
+
+	_, _ = writer.WriteString("HASHCOUNT:" + fmt.Sprintf("%d\n", len(hashes)))
+	for _, h := range hashes {
+		_, _ = writer.WriteString(h + "\n")
+	}
+	writer.Flush()
+
+
+	// send file in chunks
 	buf := make([]byte, chunkSize)
 	for {
 		n, err := file.Read(buf)
@@ -51,14 +66,14 @@ func SendFile(conn net.Conn, filepath string) error {
 func ReceiveFile(conn net.Conn) error{
 	reader := bufio.NewReader(conn)
 
-	// Read FILENAME
+	// read filename
 	filenameLine, err := reader.ReadString('\n')
 	if err != nil{
 		return err
 	}
 	filename := strings.TrimPrefix(strings.TrimSpace(filenameLine), "FILENAME:")
 
-	// Read SIZE
+	// read size
 	sizeLine, err := reader.ReadString('\n')
 	if err != nil {
 		return err
@@ -66,19 +81,39 @@ func ReceiveFile(conn net.Conn) error{
 	sizeStr := strings.TrimPrefix(strings.TrimSpace(sizeLine), "SIZE:")
 	size, err := strconv.Atoi(sizeStr)
 	if err != nil {
+		fmt.Println("here1")
 		return err
 	}
 
-	// Prepare to write
+	hashCountLine, err := reader.ReadString('\n')
+	if err != nil{
+		fmt.Println("here2")
+		return err
+	}
+	hashCountStr := strings.TrimPrefix(strings.TrimSpace(hashCountLine), "HASHCOUNT:")
+	hashCount, err := strconv.Atoi(hashCountStr)
+	if err != nil{
+		fmt.Println("here3")
+		return err
+	}
+	expectedHashes := make([]string, 0, hashCount)
+	for i := 0; i < hashCount; i++ {
+		h, _ := reader.ReadString('\n')
+		expectedHashes = append(expectedHashes, strings.TrimSpace(h))
+	}
+
 	outFile, err := os.Create("received_" + filename)
 	if err != nil {
+		fmt.Println("here4")
 		return err
 	}
 	defer outFile.Close()
 
-	// Copy chunks
+	// copy chunks
 	written := 0
 	buf := make([]byte, chunkSize)
+	chunkIndex := 0
+	// var fullHash []byte
 
 	for written < size {
 		toRead := chunkSize
@@ -87,10 +122,22 @@ func ReceiveFile(conn net.Conn) error{
 		}
 		n, err := io.ReadFull(reader, buf[:toRead])
 		if err != nil && err != io.EOF {
+			fmt.Println("here5")
 			return err
 		}
+
+		// verify chunk hash
+		hash := sha256.Sum256(buf[:n])
+		hashStr := fmt.Sprintf("%x", hash[:])
+
+		if hashStr != expectedHashes[chunkIndex] {
+			fmt.Println("here6")
+			return fmt.Errorf("chunk %d hash mismatch", chunkIndex)
+		}
+
 		outFile.Write(buf[:n])
 		written += n
+		chunkIndex++
 	}
 
 	fmt.Println("File received:", "received_"+filename)

@@ -44,13 +44,13 @@ func Client(host, port string) {
 	// 	return
 	// }
 
-	// Send the file
+	// send the file
 	// err = SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
 	// if err != nil {
 	// 	fmt.Println("File send error:", err)
 	// }
 
-	// Request a file
+	// request a file
 	// filename := "hello.txt"
 	fmt.Print("Enter the filename to request: ")
 	scanner := bufio.NewScanner(os.Stdin)
@@ -64,9 +64,10 @@ func Client(host, port string) {
 		return
 	}
 
-	// Receive the file
+	// receive the file
 	err = ReceiveFile(conn)
 	if err != nil {
 		fmt.Println("Receive error:", err)
+		return
 	}
 }
