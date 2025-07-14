@@ -76,6 +76,14 @@ func Client(host, port string) {
 	// 	fmt.Println("Receive error:", err)
 	// 	return
 	// }
+	// for{
+	// 	msg3, err := reader.ReadString('\n')
+	// 	fmt.Println(msg3)
+	// 	if err == io.EOF{
+	// 		break
+	// 	}
+	// }
+
 	filenameLine, err := reader.ReadString('\n')
 	fmt.Printf("fileNameLine: %s\n", filenameLine)
 	if err != nil {
@@ -123,14 +131,14 @@ func Client(host, port string) {
 	}
 	fmt.Printf("hashes: %s\n", hashes)
 
-	err = ConcurrentChunks(host, port, fileName, hashes, fileSize)
+	err = ConcurrentChunks(host, port, fileName, hashes, fileSize, reader)
 	if err != nil {
 		fmt.Println("Concurrent receive error:", err)
 	return
 }
 }
 
-func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int64) error{
+func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int64, reader *bufio.Reader) error{
 	totalChunks := len(hashes)
 	chunkData := make([][]byte, totalChunks)
 	errChan := make(chan error, totalChunks)
@@ -150,6 +158,15 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 
 			conn.Write([]byte("HELLO\n"))
 			bufReader := bufio.NewReader(conn)
+
+			// for{
+			// 	msg3, err := bufReader.ReadString('\n')
+			// 	fmt.Println(msg3)
+			// 	if err == io.EOF{
+			// 		break
+			// 	}
+			// }
+
 			msg, err := bufReader.ReadString('\n')
 			if err != nil{
 				fmt.Println("here11")
@@ -168,17 +185,43 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 			request := fmt.Sprintf("REQUESTCHUNK:%s:%d\n", fileName, index)
 			conn.Write([]byte(request))
 
-			buf := make([]byte, chunkSize)
-			n, err := io.ReadFull(bufReader, buf)
+			// fmt.Println("IN SECOND TIME")
+			// for{
+			// 	msg3, err := bufReader.ReadString('\n')
+			// 	fmt.Println(msg3)
+			// 	if err == io.EOF{
+			// 		break
+			// 	}
+			// }
+
+			// buf := make([]byte, chunkSize)
+			toRead := chunkSize
+			fmt.Println("fileSize:", fileSize)
+			fmt.Println("chunkSize:", chunkSize)
+			if fileSize - int64(index*chunkSize) < int64(chunkSize) {
+				toRead = int(fileSize - int64(index*chunkSize))
+			}
+			buf := make([]byte, toRead)
+			n, err := io.ReadFull(reader, buf)
+
+			// for _, b := range buf[:n] {
+			// 	fmt.Printf("%02x ", b)
+			// }
+			fmt.Printf("Raw bytes: %#v\n", buf[:n])
+			fmt.Println()
+
+			fmt.Println("N:",n)
+
 			if err != nil && err != io.EOF{
 				fmt.Println("here12")
-				errChan <- err
+				errChan <- fmt.Errorf("chunk %d read error: %w", index, err)
 				return
 			}
 
 
-
+			fmt.Println("bufLen", len(buf))
 			hash := sha256.Sum256(buf[:n])
+			fmt.Println("hash:", hash)
 			hashStr := fmt.Sprintf("%x", hash[:])
 			fmt.Printf("hashStr: %s\n", hashStr)
 			if hashStr != hashes[index]{
