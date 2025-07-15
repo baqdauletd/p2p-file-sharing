@@ -21,10 +21,7 @@ func Client(host, port string) {
     }
     defer conn.Close()
 
-    // Send data to the server
-    // ...
 	_, _ = conn.Write([]byte("HELLO\n"))
-	// Wait for WELCOME
 	reader := bufio.NewReader(conn)
 	message, _ := reader.ReadString('\n')
 	if message != "WELCOME\n" {
@@ -42,21 +39,6 @@ func Client(host, port string) {
 		fmt.Println("Name: "+file.Name)
 	}
 
-	// fmt.Println("here")
-	// err = SendCatalog(conn, "shared")
-	// if err != nil{
-	// 	fmt.Println("Error:", err)
-	// 	return
-	// }
-
-	// send the file
-	// err = SendFile(conn, "ruben-mavarez-4b0WjAX1h64-unsplash.jpg") // change path as needed
-	// if err != nil {
-	// 	fmt.Println("File send error:", err)
-	// }
-
-	// request a file
-	// filename := "hello.txt"
 	fmt.Print("Enter the filename to request: ")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -70,12 +52,7 @@ func Client(host, port string) {
 		return
 	}
 
-	// receive the file
-	// err = ReceiveFile(conn)
-	// if err != nil {
-	// 	fmt.Println("Receive error:", err)
-	// 	return
-	// }
+	// fmt.Println("READIING IN CLIENT")
 	// for{
 	// 	msg3, err := reader.ReadString('\n')
 	// 	fmt.Println(msg3)
@@ -85,13 +62,12 @@ func Client(host, port string) {
 	// }
 
 	filenameLine, err := reader.ReadString('\n')
-	fmt.Printf("fileNameLine: %s\n", filenameLine)
 	if err != nil {
 		fmt.Println("Failed to read filename:", err)
 		return
 	}
 	fileName := strings.TrimPrefix(strings.TrimSpace(filenameLine), "FILENAME:")
-	fmt.Printf("fileName: %s\n", fileName)
+	// fmt.Printf("fileName: %s\n", fileName)
 
 	sizeLine, err := reader.ReadString('\n')
 	if err != nil {
@@ -104,7 +80,7 @@ func Client(host, port string) {
 		fmt.Println("Invalid size:", err)
 		return
 	}
-	fmt.Printf("fileSize: %d\n", fileSize)
+	// fmt.Printf("fileSize: %d\n", fileSize)
 
 	hashCountLine, err := reader.ReadString('\n')
 	if err != nil {
@@ -117,7 +93,7 @@ func Client(host, port string) {
 		fmt.Println("Invalid hash count:", err)
 		return
 	}
-	fmt.Printf("hashCount: %d\n", hashCount)
+	// fmt.Printf("hashCount: %d\n", hashCount)
 
 	// read hashes
 	hashes := make([]string, 0, hashCount)
@@ -129,7 +105,7 @@ func Client(host, port string) {
 		}
 		hashes = append(hashes, strings.TrimSpace(h))
 	}
-	fmt.Printf("hashes: %s\n", hashes)
+	// fmt.Printf("hashes: %s\n", hashes)
 
 	err = ConcurrentChunks(host, port, fileName, hashes, fileSize, reader)
 	if err != nil {
@@ -174,13 +150,31 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 				return
 			}
 
-			fmt.Printf("msg: %s\n", msg)
+			// fmt.Printf("msg: %s\n", msg)
 
 
 			if msg != "WELCOME\n"{
 				errChan <-fmt.Errorf("unexpected response")
 				return
 			}
+
+			_, err = ReceiveCatalog(bufReader)
+			if err != nil{
+				fmt.Println("Error:", err)
+			}
+
+
+
+			// fmt.Println("DISCARDING UNNECESSARY INFO (CATALOG)")
+			// _,_ = io.Copy(io.Discard, bufReader)
+			// fmt.Println("IN FIRST TIME")
+			// for{
+			// 	msg3, err := bufReader.ReadString('\n')
+			// 	fmt.Println(msg3)
+			// 	if err == io.EOF{
+			// 		break
+			// 	}
+			// }
 
 			request := fmt.Sprintf("REQUESTCHUNK:%s:%d\n", fileName, index)
 			conn.Write([]byte(request))
@@ -196,21 +190,30 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 
 			// buf := make([]byte, chunkSize)
 			toRead := chunkSize
-			fmt.Println("fileSize:", fileSize)
-			fmt.Println("chunkSize:", chunkSize)
+			// fmt.Println("fileSize:", fileSize)
+			// fmt.Println("chunkSize:", chunkSize)
 			if fileSize - int64(index*chunkSize) < int64(chunkSize) {
 				toRead = int(fileSize - int64(index*chunkSize))
 			}
+			// fmt.Println("IN SECOND TIME")
+			// for{
+			// 	msg3, err := bufReader.ReadString('\n')
+			// 	fmt.Println(msg3)
+			// 	if err == io.EOF{
+			// 		break
+			// 	}
+			// }
+
 			buf := make([]byte, toRead)
-			n, err := io.ReadFull(reader, buf)
+			n, err := io.ReadFull(bufReader, buf)
 
 			// for _, b := range buf[:n] {
 			// 	fmt.Printf("%02x ", b)
 			// }
-			fmt.Printf("Raw bytes: %#v\n", buf[:n])
-			fmt.Println()
+			// fmt.Printf("Raw bytes: %#v\n", buf[:n])
+			// fmt.Println()
 
-			fmt.Println("N:",n)
+			// fmt.Println("N:",n)
 
 			if err != nil && err != io.EOF{
 				fmt.Println("here12")
@@ -219,11 +222,11 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 			}
 
 
-			fmt.Println("bufLen", len(buf))
+			// fmt.Println("bufLen", len(buf))
 			hash := sha256.Sum256(buf[:n])
-			fmt.Println("hash:", hash)
+			// fmt.Println("hash:", hash)
 			hashStr := fmt.Sprintf("%x", hash[:])
-			fmt.Printf("hashStr: %s\n", hashStr)
+			// fmt.Printf("hashStr: %s\n", hashStr)
 			if hashStr != hashes[index]{
 				errChan <- fmt.Errorf("hash mismatch at chunk %d", index)
 				return

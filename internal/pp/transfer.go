@@ -113,7 +113,6 @@ func ReceiveFile(conn net.Conn) error{
 	written := 0
 	buf := make([]byte, chunkSize)
 	chunkIndex := 0
-	// var fullHash []byte
 
 	for written < size {
 		toRead := chunkSize
