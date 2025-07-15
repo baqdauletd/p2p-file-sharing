@@ -1,0 +1,41 @@
+
+
+SERVER                                               CONNECT
+-------------------------------------------------------------------------------------------------------
+Server is ON (waiting for connection)                 
+                                                    Connecting peer
+                                                        sending HELLO
+Server accepts connection                        
+    
+goes into handleClient()
+    reads HELLO
+    sends WELCOME           
+                                                    reads WELCOME
+Sends Catalog        
+                                                    Reads catalog
+                                                    Sends file name to request
+                                                        with REQUEST:
+Reads REQUEST:filename.txt
+Goes to REQUEST if
+Sending File (FILENAME:, SIZE:, HASHCOUNT:, hashStr)
+                                                    Reads FILENAME:, SIZE, HASHCOUNT:, hashStr, and content
+
+                                                    Goes to ConcurrentChunks()
+                                                    Creates new connection in goroutine
+                                                    Sends HELLO
+Server accepts connection
+Goes into handleClient()
+Reads HELLO
+Sends WELCOME
+Sends Catalog <--- this is where the error was
+                                                    Reads WELCOME and Catalog
+                                    ---> HARDCODED  Discarding Catalog    
+                                                    Writes REQUESTCHUNK
+Reads REQUESTCHUNK
+Goes to handleChunkRequest()
+Sends content of the chunk
+                                                    Reads chunk content
+                                                    
+                                                    
+
+                    
