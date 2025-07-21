@@ -24,7 +24,7 @@ func Server(port string){
 
     for {
         // Accept incoming connections
-		fmt.Println("waiting for connection")
+		// fmt.Println("waiting for connection")
         conn, err := listener.Accept()
         if err != nil {
             fmt.Println("Error:", err)
@@ -32,7 +32,7 @@ func Server(port string){
         }
 		// log.Println("here2")
         // Handle client connection in a goroutine
-		fmt.Println("connected")
+		// fmt.Println("connected")
         go handleClient(conn)
     }
 }
@@ -46,7 +46,7 @@ func handleClient(conn net.Conn) {
 		fmt.Println("Error reading from peer:", err)
 		return
 	}
-	fmt.Printf("Received from peer: %s\n", message)
+	// fmt.Printf("Received from peer: %s\n", message)
 
 
 	if message == "HELLO\n" {

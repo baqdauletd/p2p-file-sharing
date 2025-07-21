@@ -16,12 +16,6 @@ func main(){
 	udpPort := flag.String("udpport", "9999", "UDP port for peer discovery")
 	flag.Parse()
 
-	fmt.Println("DEBUG mode:", *mode)
-	fmt.Println("DEBUG port:", *port)
-	fmt.Println("DEBUG host:", *host)
-	fmt.Println("DEBUG id:", *id)
-	fmt.Println("DEBUG udpport:", *udpPort)
-
 	switch *mode{
 	case "serve":
 		fmt.Println("Starting server on port", *port)

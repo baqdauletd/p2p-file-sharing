@@ -43,8 +43,8 @@ func broadcastPresence(selfID, selfPort string){
 	}
 	defer conn.Close()
 
-	log.Println("port:", selfPort)
-	log.Println("id:", selfID)
+	// log.Println("port:", selfPort)
+	// log.Println("id:", selfID)
 
 	for{
 		msg := fmt.Sprintf("PEER:ID=%s;PORT=%s", selfID, selfPort)
