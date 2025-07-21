@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -246,8 +247,18 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 		return fmt.Errorf("some chunks failed")
 
 	}
+	
+	targetDir := "received-files"
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		fmt.Print("Error creating directory:")
+		return err
+	}
 
-	outFile, err := os.Create("received_" + fileName)
+	fullPath := filepath.Join(targetDir, "received_" + fileName)
+
+
+	outFile, err := os.Create(fullPath)
 	if err != nil {
 		return err
 	}

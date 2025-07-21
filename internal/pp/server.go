@@ -78,7 +78,7 @@ func handleClient(conn net.Conn) {
 			return
 		}
 		line = strings.TrimSpace(line)
-		fmt.Printf("message after sending a catalog: %s\n", line)
+		// fmt.Printf("message after sending a catalog: %s\n", line)
 
 		if strings.HasPrefix(line, "REQUESTCHUNK:") {
 			parts := strings.Split(line, ":")
@@ -96,7 +96,7 @@ func handleClient(conn net.Conn) {
 			if err != nil {
 				fmt.Println("Chunk send error:", err)
 			}
-			fmt.Println("Ending CHUNK")
+			// fmt.Println("Ending CHUNK")
 			return
 		}
 

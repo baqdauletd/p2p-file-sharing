@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -102,7 +103,18 @@ func ReceiveFile(conn net.Conn) error{
 		expectedHashes = append(expectedHashes, strings.TrimSpace(h))
 	}
 
-	outFile, err := os.Create("received_" + filename)
+	targetDir := "received-files"
+	err = os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		fmt.Print("Error creating directory:")
+		return err
+	}
+	fmt.Println("Created Directory")
+
+	fullPath := filepath.Join(targetDir, "received_" + filename)
+
+
+	outFile, err := os.Create(fullPath)
 	if err != nil {
 		fmt.Println("here4")
 		return err
