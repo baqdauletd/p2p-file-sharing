@@ -11,7 +11,7 @@ import (
 )
 
 const(
-	broadcastPort = 9999
+	udpAddr = "9999"
 	broadcastAddr = "255.255.255.255:9999"
 	discoverTime = 5*time.Second
 )
@@ -25,14 +25,12 @@ type PeerInfo struct {
 
 var knownPeers = make(map[string]PeerInfo)
 
-func StartDiscovery(selfID, selfPort, selfUDPport string) {
-	// log.Println("here1")
-	go listenForPeers(selfUDPport)
+func StartDiscovery(selfID, selfPort string) {
+	go listenForPeers()
 	go broadcastPresence(selfID, selfPort)
 }
 
 func broadcastPresence(selfID, selfPort string){
-	// log.Println("here")
 	addr, err := net.ResolveUDPAddr("udp", broadcastAddr)
 	if err != nil {
 		log.Fatalf("Failed to resolve UDP address: %v", err)
@@ -53,7 +51,7 @@ func broadcastPresence(selfID, selfPort string){
 	}
 }
 
-func listenForPeers(selfUDPport string){
+func listenForPeers(){
 	// addr, err := net.ResolveUDPAddr("udp", ":"+selfUDPport)
 	// if err != nil {
 	// 	log.Fatalf("Failed to resolve UDP address: %v", err)
@@ -62,7 +60,7 @@ func listenForPeers(selfUDPport string){
 	// if err != nil {
 	// 	log.Fatalf("Failed to Listen UDP: %v", err)
 	// }
-	conn, err := listenUDPWithReuse(selfUDPport)
+	conn, err := listenUDPWithReuse(udpAddr)
 	if err != nil {
 		log.Fatalf("Failed to Listen UDP: %v", err)
 	}
@@ -81,7 +79,7 @@ func listenForPeers(selfUDPport string){
 			if peerInfo.ID != "" && peerInfo.ID != "self" {
 				if _, exists := knownPeers[peerInfo.ID]; !exists {
 					knownPeers[peerInfo.ID] = peerInfo
-					log.Println("Inserted peer:", peerInfo.ID)
+					fmt.Println("Inserted peer:", peerInfo.ID)
 				}
 			}
 			// for _, p := range knownPeers{
@@ -139,7 +137,7 @@ func listenUDPWithReuse(port string) (*net.UDPConn, error) {
 		return nil, err
 	}
 
-	// Cast to *net.UDPConn
+	// cast to *net.UDPConn
 	conn, ok := pc.(*net.UDPConn)
 	if !ok {
 		pc.Close()

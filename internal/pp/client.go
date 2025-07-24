@@ -46,7 +46,7 @@ func Client(host, port string) {
 	filename := scanner.Text()
 
 	request := fmt.Sprintf("REQUEST:%s\n", filename)
-	fmt.Printf("Request line is: %s\n", request)
+	// fmt.Printf("Request line is: %s\n", request)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
 		fmt.Println("Request send error:", err)

@@ -24,15 +24,12 @@ func Server(port string){
 
     for {
         // Accept incoming connections
-		// fmt.Println("waiting for connection")
         conn, err := listener.Accept()
         if err != nil {
             fmt.Println("Error:", err)
             continue
         }
-		// log.Println("here2")
         // Handle client connection in a goroutine
-		// fmt.Println("connected")
         go handleClient(conn)
     }
 }
