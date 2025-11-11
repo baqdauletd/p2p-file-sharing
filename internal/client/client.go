@@ -1,4 +1,4 @@
-package pp
+package client
 
 import (
 	"bufio"
@@ -11,7 +11,11 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"p2p-file-sharing/internal/transfer"
 )
+
+const chunkSize = 4096
 
 func Client(host, port string) {
     // Connect to the server
@@ -30,7 +34,7 @@ func Client(host, port string) {
 		return
 	}
 
-	catalog, err := ReceiveCatalog(reader)
+	catalog, err := transfer.ReceiveCatalog(reader)
 	if err != nil{
 		fmt.Println("Error:", err)
 	}
@@ -159,7 +163,7 @@ func ConcurrentChunks(host, port, fileName string, hashes []string, fileSize int
 				return
 			}
 
-			_, err = ReceiveCatalog(bufReader)
+			_, err = transfer.ReceiveCatalog(bufReader)
 			if err != nil{
 				fmt.Println("Error:", err)
 			}

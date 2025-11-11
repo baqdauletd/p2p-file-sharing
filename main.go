@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"p2p-file-sharing/internal/pp"
+	"p2p-file-sharing/internal/server"
+	"p2p-file-sharing/internal/client"
+	"p2p-file-sharing/internal/peer"
 	"time"
 )
 
@@ -18,19 +20,19 @@ func main(){
 	switch *mode{
 	case "serve":
 		fmt.Println("Starting server on port", *port)
-		go pp.Server(*port)
-		go pp.StartDiscovery(*id, *port)
+		go server.Server(*port)
+		go peer.StartDiscovery(*id, *port)
 
 		for {}
 	case "connect":
 		fmt.Println("Connecting to peer at", *host+":"+*port)
-		pp.Client(*host, *port)
+		client.Client(*host, *port)
 	case "peers":
-		pp.StartDiscovery(*id, *port)
+		peer.StartDiscovery(*id, *port)
 		fmt.Println("Listening for peers... (waiting 6 seconds)")
 		time.Sleep(6 * time.Second)
 		// fmt.Println("here")
-		peerList := pp.GetKnownPeers()
+		peerList := peer.GetKnownPeers()
 		fmt.Println(len(peerList))
 		for _, p := range peerList {
 			fmt.Printf("ID: %s, IP: %s, Port: %s\n", p.ID, p.IP, p.Port)

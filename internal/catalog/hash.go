@@ -1,4 +1,4 @@
-package pp
+package catalog
 
 import (
 	"crypto/sha256"
@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 )
+
+const chunkSize = 4096
 
 func GenerateChunkHashes(filePath string) ([]string, error){
 	var hashes []string

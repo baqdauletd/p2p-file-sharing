@@ -1,4 +1,4 @@
-package pp
+package catalog
 
 import (
 	"io/fs"

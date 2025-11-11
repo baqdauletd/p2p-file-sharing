@@ -1,4 +1,4 @@
-package pp
+package server
 
 import (
 	"bufio"
@@ -10,7 +10,11 @@ import (
 
 	// "log"
 	"net"
+	"p2p-file-sharing/internal/transfer"
 )
+
+
+const chunkSize = 4096
 
 func Server(port string){
 	listener, err := net.Listen("tcp", ":"+port)
@@ -55,7 +59,7 @@ func handleClient(conn net.Conn) {
 		// 	fmt.Println("Receive error:", err)
 		// }
 
-		err = SendCatalog(conn, "shared")
+		err = transfer.SendCatalog(conn, "shared")
 		if err != nil{
 			fmt.Println("Error:", err)
 			return
@@ -103,7 +107,7 @@ func handleClient(conn net.Conn) {
 
 			fmt.Println("Peer requested file:", filename)
 
-			err := SendFile(conn, filePath)
+			err := transfer.SendFile(conn, filePath)
 			if err != nil {
 				fmt.Println("File send error:", err)
 			}

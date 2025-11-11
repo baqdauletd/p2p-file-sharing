@@ -1,4 +1,4 @@
-package pp
+package peer
 
 import (
 	"context"
@@ -17,13 +17,11 @@ const(
 )
 
 
-type PeerInfo struct {
-	ID   string
-	IP   string
-	Port string
-}
-
-var knownPeers = make(map[string]PeerInfo)
+// type Peer struct {
+// 	ID   string
+// 	IP   string
+// 	Port string
+// }
 
 func StartDiscovery(selfID, selfPort string) {
 	go listenForPeers()
@@ -75,11 +73,11 @@ func listenForPeers(){
 
 		data := string(buf[:n])
 		if strings.HasPrefix(data, "PEER:") {
-			peerInfo := parsePeerInfo(data, remoteAddr)
-			if peerInfo.ID != "" && peerInfo.ID != "self" {
-				if _, exists := knownPeers[peerInfo.ID]; !exists {
-					knownPeers[peerInfo.ID] = peerInfo
-					fmt.Println("Inserted peer:", peerInfo.ID)
+			Peer := parsePeer(data, remoteAddr)
+			if Peer.ID != "" && Peer.ID != "self" {
+				if _, exists := knownPeers[Peer.ID]; !exists {
+					knownPeers[Peer.ID] = Peer
+					fmt.Println("Inserted peer:", Peer.ID)
 				}
 			}
 			// for _, p := range knownPeers{
@@ -90,24 +88,24 @@ func listenForPeers(){
 	}
 }
 
-func parsePeerInfo(data string, remoteAddr *net.UDPAddr) PeerInfo{
+func parsePeer(data string, remoteAddr *net.UDPAddr) Peer{
 	parts := strings.Split(data, ";")
 	id := strings.TrimPrefix(parts[0], "PEER:ID=")
 	port := strings.TrimPrefix(parts[1], "PORT=")
 
-	return PeerInfo{
+	return Peer{
 		ID: id,
 		IP: remoteAddr.String(),
 		Port: port,
 	}
 }
 
-func GetKnownPeers() []PeerInfo{
+func GetKnownPeers() []Peer{
 	// fmt.Println("here333")
-	list := []PeerInfo{}
-	for _, peerInfo := range knownPeers{
+	list := []Peer{}
+	for _, Peer := range knownPeers{
 		// fmt.Println("her444")
-		list = append(list, peerInfo)
+		list = append(list, Peer)
 	}
 
 	return list

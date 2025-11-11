@@ -1,4 +1,4 @@
-package pp
+package transfer
 
 import (
 	"bufio"
@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"p2p-file-sharing/internal/catalog"
 )
 
 const chunkSize = 4096
@@ -33,7 +34,7 @@ func SendFile(conn net.Conn, filepath string) error {
 	_, _ = writer.WriteString("SIZE:" + fmt.Sprintf("%d\n", stat.Size()))
 	writer.Flush()
 
-	hashes, err := GenerateChunkHashes(filepath)
+	hashes, err := catalog.GenerateChunkHashes(filepath)
 	if err != nil{
 		return err
 	}
@@ -156,7 +157,7 @@ func ReceiveFile(conn net.Conn) error{
 }
 
 func SendCatalog(conn net.Conn, folder string) error {
-	files, err := BuildFileCatalog(folder)
+	files, err := catalog.BuildFileCatalog(folder)
 	if err != nil {
 		return err
 	}
@@ -170,8 +171,8 @@ func SendCatalog(conn net.Conn, folder string) error {
 	return writer.Flush()
 }
 
-func ReceiveCatalog(reader *bufio.Reader) ([]FileMeta, error) {
-	var catalog []FileMeta
+func ReceiveCatalog(reader *bufio.Reader) ([]catalog.FileMeta, error) {
+	var cat []catalog.FileMeta
 
 	firstLine, _ := reader.ReadString('\n')
 	if strings.TrimSpace(firstLine) != "CATALOG" {
@@ -181,7 +182,7 @@ func ReceiveCatalog(reader *bufio.Reader) ([]FileMeta, error) {
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			return catalog, err
+			return cat, err
 		}
 		line = strings.TrimSpace(line)
 		if line == "ENDCATALOG" {
@@ -195,11 +196,11 @@ func ReceiveCatalog(reader *bufio.Reader) ([]FileMeta, error) {
 			name := strings.TrimPrefix(parts[0], "FILENAME:")
 			sizeStr := strings.TrimPrefix(parts[1], "SIZE:")
 			size, _ := strconv.ParseInt(sizeStr, 10, 64)
-			catalog = append(catalog, FileMeta{
+			cat = append(cat, catalog.FileMeta{
 				Name: name,
 				Size: size,
 			})
 		}
 	}
-	return catalog, nil
+	return cat, nil
 }
