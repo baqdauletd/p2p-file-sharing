@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package grpcapi;
+option go_package = "internal/grpcapi/generated;generated";
+
+// ----- Messages -----
+
+message PeerID {
+  string id = 1;
+}
+
+message FileInfo {
+  string name = 1;
+  int64 size = 2;
+}
+
+message CatalogResponse {
+  repeated FileInfo files = 1;
+}
+
+message File {
+  string file_name = 1;
+}
+
+message FileResponse {
+  string message = 1; // e.g. “ok I am ready, connect via TCP at port ~”
+}
+
+message Port{
+  string port = 1;
+}
+
+message PeerInfo {
+  string id = 1;
+  string ip = 2;
+  string port = 3;
+}
+
+message PeersResponse {
+  repeated PeerInfo peers = 1;
+}
+// ----- Service -----
+
+service PeerService {
+  rpc GetCatalog(PeerID) returns (CatalogResponse);
+  rpc RequestFile(File) returns (FileResponse);
+  rpc GetPeers(Port) returns (PeersResponse);
+}

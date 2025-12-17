@@ -15,7 +15,7 @@ Clone the repo:
 
 ```bash
 git clone git@github.com:baqdauletd/p2p-file-sharing.git
-cd concurrent-file-transfer
+cd p2p-file-sharing
 
 #create an executable file
 go build -o p2p-file-sharing

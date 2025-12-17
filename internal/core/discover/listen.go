@@ -1,4 +1,4 @@
-package server
+package discover
 
 import (
 	"bufio"
@@ -10,13 +10,13 @@ import (
 
 	// "log"
 	"net"
-	"p2p-file-sharing/internal/transfer"
+	"p2p-file-sharing/internal/core/transfer"
 )
 
 
 const chunkSize = 4096
 
-func Server(port string){
+func Listen(port string){
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil{
 		fmt.Println("Error:", err)
@@ -34,11 +34,11 @@ func Server(port string){
             continue
         }
         // Handle client connection in a goroutine
-        go handleClient(conn)
+        go handleListen(conn)
     }
 }
 
-func handleClient(conn net.Conn) {
+func handleListen(conn net.Conn) {
     defer conn.Close()
 
 	reader := bufio.NewReader(conn)

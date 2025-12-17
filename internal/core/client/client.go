@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"p2p-file-sharing/internal/transfer"
+	"p2p-file-sharing/internal/core/transfer"
 )
 
 const chunkSize = 4096

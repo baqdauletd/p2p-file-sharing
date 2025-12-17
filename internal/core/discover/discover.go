@@ -1,4 +1,4 @@
-package peer
+package discover
 
 import (
 	"context"
@@ -17,47 +17,12 @@ const(
 )
 
 
-// type Peer struct {
-// 	ID   string
-// 	IP   string
-// 	Port string
-// }
-
 func StartDiscovery(selfID, selfPort string) {
-	go listenForPeers()
-	go broadcastPresence(selfID, selfPort)
+	go listenPeers()
+	go broadcastMe(selfID, selfPort)
 }
 
-func broadcastPresence(selfID, selfPort string){
-	addr, err := net.ResolveUDPAddr("udp", broadcastAddr)
-	if err != nil {
-		log.Fatalf("Failed to resolve UDP address: %v", err)
-	}
-	conn, err := net.DialUDP("udp", nil, addr)
-	if err != nil {
-		log.Fatalf("Failed to dial UDP: %v", err)
-	}
-	defer conn.Close()
-
-	// log.Println("port:", selfPort)
-	// log.Println("id:", selfID)
-
-	for{
-		msg := fmt.Sprintf("PEER:ID=%s;PORT=%s", selfID, selfPort)
-		conn.Write([]byte(msg))
-		time.Sleep(discoverTime)
-	}
-}
-
-func listenForPeers(){
-	// addr, err := net.ResolveUDPAddr("udp", ":"+selfUDPport)
-	// if err != nil {
-	// 	log.Fatalf("Failed to resolve UDP address: %v", err)
-	// }
-	// conn, err := net.ListenUDP("udp", addr)
-	// if err != nil {
-	// 	log.Fatalf("Failed to Listen UDP: %v", err)
-	// }
+func listenPeers(){
 	conn, err := listenUDPWithReuse(udpAddr)
 	if err != nil {
 		log.Fatalf("Failed to Listen UDP: %v", err)
@@ -80,10 +45,6 @@ func listenForPeers(){
 					fmt.Println("Inserted peer:", Peer.ID)
 				}
 			}
-			// for _, p := range knownPeers{
-			// 	fmt.Printf("ID: %s, IP: %s, Port: %s\n", p.ID, p.IP, p.Port)
-			// }
-			// fmt.Println()
 		}
 	}
 }
@@ -101,16 +62,12 @@ func parsePeer(data string, remoteAddr *net.UDPAddr) Peer{
 }
 
 func GetKnownPeers() []Peer{
-	// fmt.Println("here333")
 	list := []Peer{}
 	for _, Peer := range knownPeers{
-		// fmt.Println("her444")
 		list = append(list, Peer)
 	}
-
 	return list
 }
-
 
 
 // for using the same UDPaddress by several terminals, since net.ListenUDP doesn't allow to do so

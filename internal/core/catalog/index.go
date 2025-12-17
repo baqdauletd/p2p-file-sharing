@@ -5,11 +5,6 @@ import (
 	"path/filepath"
 )
 
-type FileMeta struct {
-	Name string
-	Size int64
-}
-
 func BuildFileCatalog(folder string) ([]FileMeta, error) {
 	var files []FileMeta
 

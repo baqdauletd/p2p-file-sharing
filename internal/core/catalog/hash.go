@@ -7,8 +7,6 @@ import (
 	"os"
 )
 
-const chunkSize = 4096
-
 func GenerateChunkHashes(filePath string) ([]string, error){
 	var hashes []string
 

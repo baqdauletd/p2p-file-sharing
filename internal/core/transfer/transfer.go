@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"p2p-file-sharing/internal/catalog"
+	"p2p-file-sharing/internal/core/catalog"
 )
 
 const chunkSize = 4096
@@ -204,3 +204,22 @@ func ReceiveCatalog(reader *bufio.Reader) ([]catalog.FileMeta, error) {
 	}
 	return cat, nil
 }
+
+func StartTCPTransfer(filePath string, port int) error {
+    ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+    if err != nil {
+        return err
+    }
+    defer ln.Close()
+
+    fmt.Println("TCP transfer started on port", port)
+
+    conn, err := ln.Accept()
+    if err != nil {
+        return err
+    }
+    defer conn.Close()
+
+    return SendFile(conn, filePath)
+}
+
